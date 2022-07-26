@@ -1,0 +1,14 @@
+kafka:
+  pool: nav-dev
+  permanent-delete-topics: true
+  acl:
+    dev:
+      - team: aap
+        application: devtools
+        access: readwrite
+      - team: aap
+        application: aap-kafka-manager
+        access: read
+      - team: aap
+        application: kafka-cli
+        access: readwrite
