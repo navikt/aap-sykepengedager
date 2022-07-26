@@ -13,21 +13,15 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.aap.app.kafka.Tables
 import no.nav.aap.app.kafka.Topics
-import no.nav.aap.app.kafka.migrateStateStore
-import no.nav.aap.app.modell.SøkereKafkaDto
-import no.nav.aap.app.stream.inntekterStream
-import no.nav.aap.app.stream.manuell.manuellStream
-import no.nav.aap.app.stream.medlemStream
-import no.nav.aap.app.stream.søknadStream
+import no.nav.aap.app.stream.infotrygdStream
+import no.nav.aap.app.stream.spleisStream
 import no.nav.aap.kafka.streams.KStreams
 import no.nav.aap.kafka.streams.KStreamsConfig
 import no.nav.aap.kafka.streams.KafkaStreams
 import no.nav.aap.kafka.streams.extension.consume
 import no.nav.aap.kafka.streams.extension.produce
 import no.nav.aap.kafka.streams.store.scheduleMetrics
-import no.nav.aap.kafka.vanilla.KafkaConfig
 import no.nav.aap.ktor.config.loadConfig
-import org.apache.kafka.clients.producer.Producer
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.Topology
 import kotlin.time.Duration.Companion.minutes
@@ -41,7 +35,6 @@ data class Config(val kafka: KStreamsConfig)
 internal fun Application.server(kafka: KStreams = KafkaStreams) {
     val prometheus = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val config = loadConfig<Config>()
-    val søkerProducer = kafka.createProducer(KafkaConfig.copyFrom(config.kafka), Topics.søkere)
 
     install(MicrometerMetrics) { registry = prometheus }
     install(ContentNegotiation) { jackson { registerModule(JavaTimeModule()) } }
@@ -49,13 +42,12 @@ internal fun Application.server(kafka: KStreams = KafkaStreams) {
     Thread.currentThread().setUncaughtExceptionHandler { _, e -> log.error("Uhåndtert feil", e) }
     environment.monitor.subscribe(ApplicationStopping) {
         kafka.close()
-        søkerProducer.close()
     }
 
     kafka.connect(
         config = config.kafka,
         registry = prometheus,
-        topology = topology(prometheus, søkerProducer),
+        topology = topology(prometheus),
     )
 
     routing {
@@ -63,19 +55,16 @@ internal fun Application.server(kafka: KStreams = KafkaStreams) {
     }
 }
 
-internal fun topology(registry: MeterRegistry, søkerProducer: Producer<String, SøkereKafkaDto>): Topology {
+internal fun topology(registry: MeterRegistry): Topology {
     val streams = StreamsBuilder()
-    val søkerKTable = streams
-        .consume(Topics.søkere)
-        .produce(Tables.søkere)
+    val sykepengedagerKTable = streams
+        .consume(Topics.sykepengedager)
+        .produce(Tables.sykepengedager)
 
-    søkerKTable.scheduleMetrics(Tables.søkere, 2.minutes, registry)
-    søkerKTable.migrateStateStore(Tables.søkere, søkerProducer)
+    sykepengedagerKTable.scheduleMetrics(Tables.sykepengedager, 2.minutes, registry)
 
-    streams.søknadStream(søkerKTable)
-    streams.medlemStream(søkerKTable)
-    streams.inntekterStream(søkerKTable)
-    streams.manuellStream(søkerKTable)
+    streams.spleisStream(sykepengedagerKTable)
+    streams.infotrygdStream(sykepengedagerKTable)
 
     return streams.build()
 }

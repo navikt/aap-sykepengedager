@@ -13,7 +13,7 @@ internal class CreateMermaidDiagram {
     fun `generate mermaid diagram`() {
         EnvironmentVariables(containerProperties()).execute {
             val registry = SimpleMeterRegistry()
-            val topology = topology(registry, MockProducer())
+            val topology = topology(registry)
             val flowchart = Mermaid.graph("Sykepengedager", topology)
             val mermaidFlowcharMarkdown = markdown(flowchart)
             File("../doc/topology.md").apply { writeText(mermaidFlowcharMarkdown) }
