@@ -1,0 +1,26 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: sykepengedager.v1
+  namespace: aap
+  labels:
+    team: aap
+  annotations:
+    kafka.nais.io/removeDataWhenResourceIsDeleted: "{{kafka.permanent-delete-topics}}"
+    kafka.format: json
+    kafka.state: "true"
+    github.url: https://github.com/navikt/aap-sykepengedager
+spec:
+  pool: {{kafka.pool}}
+  config:
+    cleanupPolicy: compact
+    partitions: 12
+  acl:
+    - team: aap
+      application: sykepengedager
+      access: readwrite
+  {{#each kafka.acl.dev as |dev|}}
+    - team: "{{dev.team}}"
+      application: "{{dev.application}}"
+      access: "{{dev.access}}"
+  {{/each}}
