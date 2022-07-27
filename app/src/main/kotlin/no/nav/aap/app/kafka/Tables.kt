@@ -5,5 +5,5 @@ import no.nav.aap.kafka.streams.Table
 internal const val SYKEPENGEDAGER_STORE_NAME = "sykepengedager-state-store-v1"
 
 object Tables {
-    val sykepengedager = Table("sokere", Topics.sykepengedager, false, SYKEPENGEDAGER_STORE_NAME)
+    val sykepengedager = Table("sykepengedager", Topics.sykepengedager, false, SYKEPENGEDAGER_STORE_NAME)
 }
