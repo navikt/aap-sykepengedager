@@ -1,4 +1,4 @@
-![img](doc/logo.jpg)
+<!--![img](doc/logo.jpg)-->
 
 Sykepengedagersapplikasjon for AAP
 
