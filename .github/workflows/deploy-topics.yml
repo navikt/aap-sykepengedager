@@ -1,4 +1,4 @@
-name: Deploy Topic
+name: Deploy Topics
 
 on:
   push:
@@ -13,8 +13,12 @@ jobs:
   deploy:
     strategy:
       matrix:
-        name: [topic-sykepengedager.yml, topic-sykepengedager-spleis.yml, topic-sykepengedager-infotrygd.yml]
-        cluster: [dev-gcp]
+        name:
+          - topic-sykepengedager.yml
+          - topic-sykepengedager-spleis.yml
+          - topic-sykepengedager-infotrygd.yml
+        cluster:
+          - dev-gcp
         include:
           - cluster: dev-gcp
             vars: dev.yml
