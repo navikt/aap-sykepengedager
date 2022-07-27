@@ -10,7 +10,6 @@ allprojects {
         mavenCentral()
         mavenLocal()
         maven("https://jitpack.io")
-        maven("https://packages.confluent.io/maven/")
     }
 }
 
@@ -27,14 +26,6 @@ subprojects {
             testLogging {
                 events("PASSED", "SKIPPED", "FAILED")
             }
-        }
-    }
-
-    configurations.all {
-        resolutionStrategy {
-            force(
-                "org.apache.kafka:kafka-clients:3.2.0"
-            )
         }
     }
 }
