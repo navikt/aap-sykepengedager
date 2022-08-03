@@ -8,6 +8,7 @@ on:
       - '.nais/topic-*.yml'
       - '.github/workflows/deploy-topics.yml'
       - '.nais/dev.yml'
+      - '.nais/prod.yml'
 
 jobs:
   deploy:
@@ -19,9 +20,12 @@ jobs:
           - topic-sykepengedager-infotrygd.yml
         cluster:
           - dev-gcp
+          - prod-gcp
         include:
           - cluster: dev-gcp
             vars: dev.yml
+          - cluster: prod-gcp
+            vars: prod.yml
           - cluster: dev-gcp
             name: topic-sykepengedager-infotrygd-q1.yml
             vars: dev.yml
