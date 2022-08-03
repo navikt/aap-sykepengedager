@@ -3,6 +3,8 @@ kind: AivenApplication
 metadata:
   name: sykepengedager.infotrygd
   namespace: aap
+  labels:
+    team: aap
 spec:
   kafka:
     pool: {{kafka.pool}}
