@@ -1,6 +1,7 @@
 kafka:
   pool: nav-dev
   permanent-delete-topics: true
+  sykepengedagerInfotrygdSecretName: sykepengedager-infotrygd-dev-e45by45w
   acl:
     dev:
       - team: aap

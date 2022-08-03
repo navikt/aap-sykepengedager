@@ -1,0 +1,10 @@
+apiVersion: aiven.nais.io/v1
+kind: AivenApplication
+metadata:
+  name: sykepengedager.infotrygd
+  namespace: aap
+spec:
+  kafka:
+    pool: {{kafka.pool}}
+  secretName: {{kafka.sykepengedagerInfotrygdSecretName}}
+  protected: true
