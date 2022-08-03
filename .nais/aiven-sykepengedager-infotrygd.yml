@@ -1,7 +1,7 @@
 apiVersion: aiven.nais.io/v1
 kind: AivenApplication
 metadata:
-  name: sykepengedager.infotrygd
+  name: sykepengedager-infotrygd
   namespace: aap
   labels:
     team: aap

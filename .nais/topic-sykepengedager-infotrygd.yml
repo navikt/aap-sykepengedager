@@ -20,7 +20,7 @@ spec:
       application: sykepengedager
       access: read
     - team: aap
-      application: sykepengedager.infotrygd
+      application: sykepengedager-infotrygd
       access: write
   {{#each kafka.acl.dev as |dev|}}
     - team: "{{dev.team}}"
