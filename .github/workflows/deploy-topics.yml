@@ -22,6 +22,8 @@ jobs:
         include:
           - cluster: dev-gcp
             vars: dev.yml
+          - cluster: dev-gcp
+            name: topic-sykepengedager-infotrygd-q1.yml
     name: Deploy ${{ matrix.name }} to ${{ matrix.cluster }}
     runs-on: ubuntu-latest
     steps:
