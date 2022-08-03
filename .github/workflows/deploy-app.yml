@@ -9,6 +9,8 @@ on:
     paths-ignore:
       - '.nais/topic-*.yml'
       - '.github/workflows/deploy-topics.yml'
+      - '.nais/aiven-*.yml'
+      - '.github/workflows/deploy-aiven.yml'
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
