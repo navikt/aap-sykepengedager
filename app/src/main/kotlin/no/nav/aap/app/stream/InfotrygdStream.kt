@@ -19,16 +19,16 @@ internal fun StreamsBuilder.infotrygdStream(sykepengedager: KTable<String, Sykep
             "${key.substring(4, 6)}${key.substring(2, 4)}${key.substring(0, 2)}${key.substring(6)}"
         }
         .leftJoin(Topics.infotrygd with Topics.sykepengedager, sykepengedager)
-        .mapValues("infotrygd-sykepengedager-map") { key, (infotrygd, denAndre) ->
+        .mapValues("infotrygd-sykepengedager-map") { key, (infotrygd, gammelSøkereKafkaDto) ->
             val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
             val utbetTom = LocalDate.parse(infotrygd.after.IS10_UTBET_TOM, formatter)
             val maksdato = LocalDate.parse(infotrygd.after.IS10_MAX, formatter)
             SykepengedagerKafkaDto(
                 personident = key,
                 gjenståendeSykedager = utbetTom.gjenståendeSykedager(maksdato),
-                maksdato = maksdato,
+                foreløpigBeregnetSluttPåSykepenger = maksdato,
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
-            ) to denAndre
+            ) to gammelSøkereKafkaDto
         }
         .peek("infotrygd-sykepengedager-peek-ny-gammel") { (søkereKafkaDto, gammelSøkereKafkaDto) ->
             if (gammelSøkereKafkaDto != null)

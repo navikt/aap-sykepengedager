@@ -4,6 +4,7 @@ import io.ktor.server.testing.*
 import no.nav.aap.app.kafka.SYKEPENGEDAGER_STORE_NAME
 import no.nav.aap.app.kafka.Topics
 import no.nav.aap.app.modell.InfotrygdKafkaDto
+import no.nav.aap.app.modell.SpleisKafkaDto
 import no.nav.aap.app.modell.SykepengedagerKafkaDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -21,11 +22,9 @@ internal class ApiTest {
 
             val fnrNormal = "29468230052"
             spleisTopic.produce(fnrNormal) {
-                SykepengedagerKafkaDto(
-                    personident = fnrNormal,
+                SpleisKafkaDto(
                     gjenståendeSykedager = 0,
-                    maksdato = LocalDate.of(2022, 6, 26),
-                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 )
             }
 
@@ -35,7 +34,7 @@ internal class ApiTest {
             val expected = SykepengedagerKafkaDto(
                 personident = fnrNormal,
                 gjenståendeSykedager = 0,
-                maksdato = LocalDate.of(2022, 6, 26),
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
             )
 
@@ -68,7 +67,7 @@ internal class ApiTest {
             val expected = SykepengedagerKafkaDto(
                 personident = fnrNormal,
                 gjenståendeSykedager = 88,
-                maksdato = LocalDate.of(2022, 9, 7),
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 9, 7),
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
             )
 
@@ -84,19 +83,15 @@ internal class ApiTest {
 
             val fnr = "123"
             spleisTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
+                SpleisKafkaDto(
                     gjenståendeSykedager = 5,
-                    maksdato = LocalDate.of(2022, 6, 24),
-                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 24),
                 )
             }
             spleisTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
+                SpleisKafkaDto(
                     gjenståendeSykedager = 0,
-                    maksdato = LocalDate.of(2022, 6, 26),
-                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 )
             }
 
@@ -106,7 +101,7 @@ internal class ApiTest {
             val expected = SykepengedagerKafkaDto(
                 personident = fnr,
                 gjenståendeSykedager = 0,
-                maksdato = LocalDate.of(2022, 6, 26),
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
             )
 
@@ -134,11 +129,9 @@ internal class ApiTest {
                 )
             }
             spleisTopic.produce(fnrNormal) {
-                SykepengedagerKafkaDto(
-                    personident = fnrNormal,
+                SpleisKafkaDto(
                     gjenståendeSykedager = 0,
-                    maksdato = LocalDate.of(2022, 6, 26),
-                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 )
             }
 
@@ -148,7 +141,7 @@ internal class ApiTest {
             val expected = SykepengedagerKafkaDto(
                 personident = fnrNormal,
                 gjenståendeSykedager = 0,
-                maksdato = LocalDate.of(2022, 6, 26),
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
             )
 
@@ -190,7 +183,7 @@ internal class ApiTest {
             val expected = SykepengedagerKafkaDto(
                 personident = fnrNormal,
                 gjenståendeSykedager = 0,
-                maksdato = LocalDate.of(2022, 6, 26),
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
             )
 
@@ -209,11 +202,9 @@ internal class ApiTest {
             val fnrInfotrygd = "82462930052"
             val fnrNormal = "29468230052"
             spleisTopic.produce(fnrNormal) {
-                SykepengedagerKafkaDto(
-                    personident = fnrNormal,
+                SpleisKafkaDto(
                     gjenståendeSykedager = 5,
-                    maksdato = LocalDate.of(2022, 6, 24),
-                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 24),
                 )
             }
             infotrygdTopic.produce(fnrInfotrygd) {
@@ -232,7 +223,7 @@ internal class ApiTest {
             val expected = SykepengedagerKafkaDto(
                 personident = fnrNormal,
                 gjenståendeSykedager = 0,
-                maksdato = LocalDate.of(2022, 6, 26),
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
             )
 
