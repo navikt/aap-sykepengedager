@@ -16,7 +16,6 @@ jobs:
       matrix:
         name:
           - topic-sykepengedager.yml
-          - topic-sykepengedager-spleis.yml
           - topic-sykepengedager-infotrygd.yml
         cluster:
           - dev-gcp
