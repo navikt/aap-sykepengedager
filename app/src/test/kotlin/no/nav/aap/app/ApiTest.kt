@@ -3,6 +3,7 @@ package no.nav.aap.app
 import io.ktor.server.testing.*
 import no.nav.aap.app.kafka.SYKEPENGEDAGER_STORE_NAME
 import no.nav.aap.app.kafka.Topics
+import no.nav.aap.app.modell.InfotrygdKafkaDto
 import no.nav.aap.app.modell.SykepengedagerKafkaDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -18,27 +19,27 @@ internal class ApiTest {
             val spleisTopic = mocks.kafka.inputTopic(Topics.spleis)
             val stateStore = mocks.kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-            val fnr = "123"
-            spleisTopic.produce(fnr) {
+            val fnrNormal = "29468230052"
+            spleisTopic.produce(fnrNormal) {
                 SykepengedagerKafkaDto(
-                    personident = fnr,
+                    personident = fnrNormal,
                     gjenståendeSykedager = 0,
                     maksdato = LocalDate.of(2022, 6, 26),
                     kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
                 )
             }
 
-            val sykepengedagerKafkaDto = stateStore[fnr]
+            val sykepengedagerKafkaDto = stateStore[fnrNormal]
             assertNotNull(sykepengedagerKafkaDto)
 
-            val actual = SykepengedagerKafkaDto(
-                personident = fnr,
+            val expected = SykepengedagerKafkaDto(
+                personident = fnrNormal,
                 gjenståendeSykedager = 0,
                 maksdato = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
             )
 
-            assertEquals(sykepengedagerKafkaDto, actual)
+            assertEquals(expected, sykepengedagerKafkaDto)
         }
     }
 
@@ -48,27 +49,30 @@ internal class ApiTest {
             val infotrygdTopic = mocks.kafka.inputTopic(Topics.infotrygd)
             val stateStore = mocks.kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-            val fnr = "123"
-            infotrygdTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
-                    gjenståendeSykedager = 0,
-                    maksdato = LocalDate.of(2022, 6, 26),
-                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+            //Infotrygdformat
+            val fnrInfotrygd = "82462930052"
+            val fnrNormal = "29468230052"
+            infotrygdTopic.produce(fnrInfotrygd) {
+                InfotrygdKafkaDto(
+                    after = InfotrygdKafkaDto.After(
+                        IS10_UTBET_TOM = "20220506",
+                        IS10_MAX = "20220907",
+                        F_NR = fnrInfotrygd,
+                    )
                 )
             }
 
-            val sykepengedagerKafkaDto = stateStore[fnr]
+            val sykepengedagerKafkaDto = stateStore[fnrNormal]
             assertNotNull(sykepengedagerKafkaDto)
 
-            val actual = SykepengedagerKafkaDto(
-                personident = fnr,
-                gjenståendeSykedager = 0,
-                maksdato = LocalDate.of(2022, 6, 26),
+            val expected = SykepengedagerKafkaDto(
+                personident = fnrNormal,
+                gjenståendeSykedager = 88,
+                maksdato = LocalDate.of(2022, 9, 7),
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
             )
 
-            assertEquals(sykepengedagerKafkaDto, actual)
+            assertEquals(expected, sykepengedagerKafkaDto)
         }
     }
 
@@ -99,14 +103,14 @@ internal class ApiTest {
             val sykepengedagerKafkaDto = stateStore[fnr]
             assertNotNull(sykepengedagerKafkaDto)
 
-            val actual = SykepengedagerKafkaDto(
+            val expected = SykepengedagerKafkaDto(
                 personident = fnr,
                 gjenståendeSykedager = 0,
                 maksdato = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
             )
 
-            assertEquals(sykepengedagerKafkaDto, actual)
+            assertEquals(expected, sykepengedagerKafkaDto)
         }
     }
 
@@ -117,35 +121,38 @@ internal class ApiTest {
             val infotrygdTopic = mocks.kafka.inputTopic(Topics.infotrygd)
             val stateStore = mocks.kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-            val fnr = "123"
-            infotrygdTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
-                    gjenståendeSykedager = 5,
-                    maksdato = LocalDate.of(2022, 6, 24),
-                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+            //Infotrygdformat
+            val fnrInfotrygd = "82462930052"
+            val fnrNormal = "29468230052"
+            infotrygdTopic.produce(fnrInfotrygd) {
+                InfotrygdKafkaDto(
+                    after = InfotrygdKafkaDto.After(
+                        IS10_UTBET_TOM = "20220617",
+                        IS10_MAX = "20220624",
+                        F_NR = fnrInfotrygd,
+                    )
                 )
             }
-            spleisTopic.produce(fnr) {
+            spleisTopic.produce(fnrNormal) {
                 SykepengedagerKafkaDto(
-                    personident = fnr,
+                    personident = fnrNormal,
                     gjenståendeSykedager = 0,
                     maksdato = LocalDate.of(2022, 6, 26),
                     kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
                 )
             }
 
-            val sykepengedagerKafkaDto = stateStore[fnr]
+            val sykepengedagerKafkaDto = stateStore[fnrNormal]
             assertNotNull(sykepengedagerKafkaDto)
 
-            val actual = SykepengedagerKafkaDto(
-                personident = fnr,
+            val expected = SykepengedagerKafkaDto(
+                personident = fnrNormal,
                 gjenståendeSykedager = 0,
                 maksdato = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
             )
 
-            assertEquals(sykepengedagerKafkaDto, actual)
+            assertEquals(expected, sykepengedagerKafkaDto)
         }
     }
 
@@ -155,35 +162,39 @@ internal class ApiTest {
             val infotrygdTopic = mocks.kafka.inputTopic(Topics.infotrygd)
             val stateStore = mocks.kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-            val fnr = "123"
-            infotrygdTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
-                    gjenståendeSykedager = 5,
-                    maksdato = LocalDate.of(2022, 6, 24),
-                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+            //Infotrygdformat
+            val fnrInfotrygd = "82462930052"
+            val fnrNormal = "29468230052"
+            infotrygdTopic.produce(fnrInfotrygd) {
+                InfotrygdKafkaDto(
+                    after = InfotrygdKafkaDto.After(
+                        IS10_UTBET_TOM = "20220617",
+                        IS10_MAX = "20220624",
+                        F_NR = fnrInfotrygd,
+                    )
                 )
             }
-            infotrygdTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
-                    gjenståendeSykedager = 0,
-                    maksdato = LocalDate.of(2022, 6, 26),
-                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+            infotrygdTopic.produce(fnrInfotrygd) {
+                InfotrygdKafkaDto(
+                    after = InfotrygdKafkaDto.After(
+                        IS10_UTBET_TOM = "20220626",
+                        IS10_MAX = "20220626",
+                        F_NR = fnrInfotrygd,
+                    )
                 )
             }
 
-            val sykepengedagerKafkaDto = stateStore[fnr]
+            val sykepengedagerKafkaDto = stateStore[fnrNormal]
             assertNotNull(sykepengedagerKafkaDto)
 
-            val actual = SykepengedagerKafkaDto(
-                personident = fnr,
+            val expected = SykepengedagerKafkaDto(
+                personident = fnrNormal,
                 gjenståendeSykedager = 0,
                 maksdato = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
             )
 
-            assertEquals(sykepengedagerKafkaDto, actual)
+            assertEquals(expected, sykepengedagerKafkaDto)
         }
     }
 
@@ -194,35 +205,38 @@ internal class ApiTest {
             val infotrygdTopic = mocks.kafka.inputTopic(Topics.infotrygd)
             val stateStore = mocks.kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-            val fnr = "123"
-            spleisTopic.produce(fnr) {
+            //Infotrygdformat
+            val fnrInfotrygd = "82462930052"
+            val fnrNormal = "29468230052"
+            spleisTopic.produce(fnrNormal) {
                 SykepengedagerKafkaDto(
-                    personident = fnr,
+                    personident = fnrNormal,
                     gjenståendeSykedager = 5,
                     maksdato = LocalDate.of(2022, 6, 24),
                     kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
                 )
             }
-            infotrygdTopic.produce(fnr) {
-                SykepengedagerKafkaDto(
-                    personident = fnr,
-                    gjenståendeSykedager = 0,
-                    maksdato = LocalDate.of(2022, 6, 26),
-                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+            infotrygdTopic.produce(fnrInfotrygd) {
+                InfotrygdKafkaDto(
+                    after = InfotrygdKafkaDto.After(
+                        IS10_UTBET_TOM = "20220626",
+                        IS10_MAX = "20220626",
+                        F_NR = fnrInfotrygd,
+                    )
                 )
             }
 
-            val sykepengedagerKafkaDto = stateStore[fnr]
+            val sykepengedagerKafkaDto = stateStore[fnrNormal]
             assertNotNull(sykepengedagerKafkaDto)
 
-            val actual = SykepengedagerKafkaDto(
-                personident = fnr,
+            val expected = SykepengedagerKafkaDto(
+                personident = fnrNormal,
                 gjenståendeSykedager = 0,
                 maksdato = LocalDate.of(2022, 6, 26),
                 kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
             )
 
-            assertEquals(sykepengedagerKafkaDto, actual)
+            assertEquals(expected, sykepengedagerKafkaDto)
         }
     }
 }
