@@ -7,7 +7,7 @@ graph LR
 
 subgraph Sykepengedager
     %% TOPICS
-    aap.sykepengedager.spleis.v1([aap.sykepengedager.spleis.v1])
+    tbd.utbetaling([tbd.utbetaling])
 	aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition([aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition])
 	aap.sykepengedager.v1([aap.sykepengedager.v1])
 	aap.sykepengedager.infotrygd.v1([aap.sykepengedager.infotrygd.v1])
@@ -26,7 +26,7 @@ subgraph Sykepengedager
     aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition --> join-0
 	sykepengedager-state-store-v1 --> join-0
 	join-0 --> |infotrygd-sykepengedager-produced| aap.sykepengedager.v1
-	aap.sykepengedager.spleis.v1 --> join-1
+	tbd.utbetaling --> join-1
 	sykepengedager-state-store-v1 --> join-1
 	join-1 --> |spleis-sykepengedager-produced| aap.sykepengedager.v1
     
@@ -45,7 +45,7 @@ end
 %% blue     #07cff6
 
 %% STYLES
-style aap.sykepengedager.spleis.v1 fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
+style tbd.utbetaling fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style aap.sykepengedager.v1 fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style aap.sykepengedager.infotrygd.v1 fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
