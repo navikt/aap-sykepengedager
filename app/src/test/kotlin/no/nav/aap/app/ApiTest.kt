@@ -76,6 +76,40 @@ internal class ApiTest {
     }
 
     @Test
+    fun `Ved beregning av gjenstående sykedager skal siste utbetalte dag ikke telles med og siste sykepengedag skal telles med`() {
+        withTestApp { mocks ->
+            val infotrygdTopic = mocks.kafka.inputTopic(Topics.infotrygd)
+            val stateStore = mocks.kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+
+            //Infotrygdformat
+            val fnrInfotrygd = "82462930052"
+            val fnrNormal = "29468230052"
+            infotrygdTopic.produce(fnrInfotrygd) {
+                InfotrygdKafkaDto(
+                    after = InfotrygdKafkaDto.After(
+                        // Ikke en funksjonell gyldig utbetalingsdato
+                        IS10_UTBET_TOM = "20220827",
+                        IS10_MAX = "20220829",
+                        F_NR = fnrInfotrygd,
+                    )
+                )
+            }
+
+            val sykepengedagerKafkaDto = stateStore[fnrNormal]
+            assertNotNull(sykepengedagerKafkaDto)
+
+            val expected = SykepengedagerKafkaDto(
+                personident = fnrNormal,
+                gjenståendeSykedager = 1,
+                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 8, 29),
+                kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+            )
+
+            assertEquals(expected, sykepengedagerKafkaDto)
+        }
+    }
+
+    @Test
     fun `Ny sykepengedager fra Spleis overskriver tidligere fra Spleis`() {
         withTestApp { mocks ->
             val spleisTopic = mocks.kafka.inputTopic(Topics.spleis)

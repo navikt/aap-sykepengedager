@@ -41,7 +41,8 @@ internal fun StreamsBuilder.infotrygdStream(sykepengedager: KTable<String, Sykep
 }
 
 private fun LocalDate.gjenståendeSykedager(other: LocalDate) = this
-    .datesUntil(other)
+    .plusDays(1)
+    .datesUntil(other.plusDays(1))
     .toList()
     .count(LocalDate::erIkkeHelg)
     .coerceAtLeast(0)
