@@ -2,13 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.10"
-    id("com.github.johnrengelman.shadow") version "7.1.2" apply false
+    id("io.ktor.plugin") version "2.1.0" apply false
 }
 
 allprojects {
     repositories {
         mavenCentral()
-        mavenLocal()
         maven("https://jitpack.io")
     }
 }

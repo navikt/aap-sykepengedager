@@ -14,26 +14,34 @@ private val secureLog = LoggerFactory.getLogger("secureLog")
 internal fun StreamsBuilder.spleisStream(sykepengedager: KTable<String, SykepengedagerKafkaDto>) {
     consume(Topics.spleis)
         .filterNotNull("spleis-sykepengedager-filter-tombstone")
-        .repartition(Repartitioned
-            .`as`<String?, SpleisKafkaDto?>("spleis-sykepengedager-repartition")
-            .withKeySerde(Topics.spleis.keySerde)
-            .withValueSerde(Topics.spleis.valueSerde)
-            .withNumberOfPartitions(12))
+        .filterNotNullBy("spleis-sykepengedager-filter-not-null-genstaende-sykedager-pre-repart") { spleisKafkaDto -> spleisKafkaDto.gjenståendeSykedager }
+        .filterNotNullBy("spleis-sykepengedager-filter-not-null-slutt-sykepenger-pre-repart") { spleisKafkaDto -> spleisKafkaDto.foreløpigBeregnetSluttPåSykepenger }
+        .repartition(
+            Repartitioned
+                .`as`<String?, SpleisKafkaDto?>("spleis-sykepengedager-repartition")
+                .withKeySerde(Topics.spleis.keySerde)
+                .withValueSerde(Topics.spleis.valueSerde)
+                .withNumberOfPartitions(12)
+        )
+        .filterNotNullBy("spleis-sykepengedager-filter-not-null-genstaende-sykedager-post-repart") { spleisKafkaDto -> spleisKafkaDto.gjenståendeSykedager }
+        .filterNotNullBy("spleis-sykepengedager-filter-not-null-slutt-sykepenger-post-repart") { spleisKafkaDto -> spleisKafkaDto.foreløpigBeregnetSluttPåSykepenger }
         .leftJoin(Topics.spleis with Topics.sykepengedager, sykepengedager)
-        .mapValues("spleis-sykepengedager-map") { key, (spleis, gammelSøkereKafkaDto) ->
+        .mapValues("spleis-sykepengedager-map") { key, (spleisKafkaDto, gammelSykepengedagerKafkaDto) ->
+            val gjenståendeSykedager = requireNotNull(spleisKafkaDto.gjenståendeSykedager)
+            val foreløpigBeregnetSluttPåSykepenger = requireNotNull(spleisKafkaDto.foreløpigBeregnetSluttPåSykepenger)
             SykepengedagerKafkaDto(
                 personident = key,
-                gjenståendeSykedager = spleis.gjenståendeSykedager,
-                foreløpigBeregnetSluttPåSykepenger = spleis.foreløpigBeregnetSluttPåSykepenger,
+                gjenståendeSykedager = gjenståendeSykedager,
+                foreløpigBeregnetSluttPåSykepenger = foreløpigBeregnetSluttPåSykepenger,
                 kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
-            ) to gammelSøkereKafkaDto
+            ) to gammelSykepengedagerKafkaDto
         }
-        .peek("spleis-sykepengedager-peek-ny-gammel") { (søkereKafkaDto, gammelSøkereKafkaDto) ->
-            if (gammelSøkereKafkaDto != null)
-                secureLog.info("oppdatert gjenstående sykedager i Spleis fra $gammelSøkereKafkaDto til $søkereKafkaDto")
+        .peek("spleis-sykepengedager-peek-ny-gammel") { (nySykepengedagerKafkaDto, gammelSykepengedagerKafkaDto) ->
+            if (gammelSykepengedagerKafkaDto != null)
+                secureLog.info("oppdatert gjenstående sykedager i Spleis fra $gammelSykepengedagerKafkaDto til $nySykepengedagerKafkaDto")
             else
-                secureLog.info("ny gjenstående sykedager i Spleis $søkereKafkaDto")
+                secureLog.info("ny gjenstående sykedager i Spleis $nySykepengedagerKafkaDto")
         }
-        .first()
+        .firstPairValue("spleis-sykepengedager-hent-ut-ny-sykepengedager")
         .produce(Topics.sykepengedager, "spleis-sykepengedager-produced")
 }
