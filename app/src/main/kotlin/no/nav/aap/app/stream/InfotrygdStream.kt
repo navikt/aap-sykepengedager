@@ -1,7 +1,7 @@
 package no.nav.aap.app.stream
 
 import no.nav.aap.app.kafka.Topics
-import no.nav.aap.app.modell.SykepengedagerKafkaDto
+import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
 import no.nav.aap.kafka.streams.extension.*
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.KTable
@@ -19,15 +19,16 @@ internal fun StreamsBuilder.infotrygdStream(sykepengedager: KTable<String, Sykep
             "${key.substring(4, 6)}${key.substring(2, 4)}${key.substring(0, 2)}${key.substring(6)}"
         }
         .leftJoin(Topics.infotrygd with Topics.sykepengedager, sykepengedager)
-        .mapValues("infotrygd-sykepengedager-map") { key, (infotrygdKafkaDto, gammelSykepengedagerKafkaDto) ->
+        .mapValues("infotrygd-sykepengedager-map") { (infotrygdKafkaDto, gammelSykepengedagerKafkaDto) ->
             val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
             val utbetTom = LocalDate.parse(infotrygdKafkaDto.after.IS10_UTBET_TOM, formatter)
             val maksdato = LocalDate.parse(infotrygdKafkaDto.after.IS10_MAX, formatter)
             SykepengedagerKafkaDto(
-                personident = key,
-                gjenståendeSykedager = utbetTom.gjenståendeSykedager(maksdato),
-                foreløpigBeregnetSluttPåSykepenger = maksdato,
-                kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                response = SykepengedagerKafkaDto.Response(
+                    gjenståendeSykedager = utbetTom.gjenståendeSykedager(maksdato),
+                    foreløpigBeregnetSluttPåSykepenger = maksdato,
+                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                )
             ) to gammelSykepengedagerKafkaDto
         }
         .peek("infotrygd-sykepengedager-peek-ny-gammel") { (nySykepengedagerKafkaDto, gammelSykepengedagerKafkaDto) ->
