@@ -39,15 +39,15 @@ internal class TopologyTest {
         val spleisTopic = kafka.inputTopic(Topics.spleis)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-        val fnrNormal = "29468230052"
-        spleisTopic.produce(fnrNormal) {
+        val fnr = "29468230052"
+        spleisTopic.produce(fnr) {
             SpleisKafkaDto(
                 gjenståendeSykedager = 0,
                 foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
             )
         }
 
-        val sykepengedagerKafkaDto = stateStore[fnrNormal]
+        val sykepengedagerKafkaDto = stateStore[fnr]
         assertNotNull(sykepengedagerKafkaDto)
 
         val expected = SykepengedagerKafkaDto(
@@ -66,20 +66,18 @@ internal class TopologyTest {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-        //Infotrygdformat
-        val fnrInfotrygd = "82462930052"
-        val fnrNormal = "29468230052"
-        infotrygdTopic.produce(fnrInfotrygd) {
+        val fnr = "29468230052"
+        infotrygdTopic.produce(fnr) {
             InfotrygdKafkaDto(
                 after = InfotrygdKafkaDto.After(
-                    IS10_UTBET_TOM = "20220506",
-                    IS10_MAX = "20220907",
-                    F_NR = fnrInfotrygd,
+                    UTBET_TOM = "20220506",
+                    MAX_DATO = "20220907",
+                    F_NR = fnr,
                 )
             )
         }
 
-        val sykepengedagerKafkaDto = stateStore[fnrNormal]
+        val sykepengedagerKafkaDto = stateStore[fnr]
         assertNotNull(sykepengedagerKafkaDto)
 
         val expected = SykepengedagerKafkaDto(
@@ -98,21 +96,19 @@ internal class TopologyTest {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-        //Infotrygdformat
-        val fnrInfotrygd = "82462930052"
-        val fnrNormal = "29468230052"
-        infotrygdTopic.produce(fnrInfotrygd) {
+        val fnr = "29468230052"
+        infotrygdTopic.produce(fnr) {
             InfotrygdKafkaDto(
                 after = InfotrygdKafkaDto.After(
                     // Ikke en funksjonell gyldig utbetalingsdato
-                    IS10_UTBET_TOM = "20220827",
-                    IS10_MAX = "20220829",
-                    F_NR = fnrInfotrygd,
+                    UTBET_TOM = "20220827",
+                    MAX_DATO = "20220829",
+                    F_NR = fnr,
                 )
             )
         }
 
-        val sykepengedagerKafkaDto = stateStore[fnrNormal]
+        val sykepengedagerKafkaDto = stateStore[fnr]
         assertNotNull(sykepengedagerKafkaDto)
 
         val expected = SykepengedagerKafkaDto(
@@ -165,26 +161,24 @@ internal class TopologyTest {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-        //Infotrygdformat
-        val fnrInfotrygd = "82462930052"
-        val fnrNormal = "29468230052"
-        infotrygdTopic.produce(fnrInfotrygd) {
+        val fnr = "29468230052"
+        infotrygdTopic.produce(fnr) {
             InfotrygdKafkaDto(
                 after = InfotrygdKafkaDto.After(
-                    IS10_UTBET_TOM = "20220617",
-                    IS10_MAX = "20220624",
-                    F_NR = fnrInfotrygd,
+                    UTBET_TOM = "20220617",
+                    MAX_DATO = "20220624",
+                    F_NR = fnr,
                 )
             )
         }
-        spleisTopic.produce(fnrNormal) {
+        spleisTopic.produce(fnr) {
             SpleisKafkaDto(
                 gjenståendeSykedager = 0,
                 foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
             )
         }
 
-        val sykepengedagerKafkaDto = stateStore[fnrNormal]
+        val sykepengedagerKafkaDto = stateStore[fnr]
         assertNotNull(sykepengedagerKafkaDto)
         assertNotNull(sykepengedagerKafkaDto.response)
 
@@ -204,29 +198,27 @@ internal class TopologyTest {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-        //Infotrygdformat
-        val fnrInfotrygd = "82462930052"
-        val fnrNormal = "29468230052"
-        infotrygdTopic.produce(fnrInfotrygd) {
+        val fnr = "29468230052"
+        infotrygdTopic.produce(fnr) {
             InfotrygdKafkaDto(
                 after = InfotrygdKafkaDto.After(
-                    IS10_UTBET_TOM = "20220617",
-                    IS10_MAX = "20220624",
-                    F_NR = fnrInfotrygd,
+                    UTBET_TOM = "20220617",
+                    MAX_DATO = "20220624",
+                    F_NR = fnr,
                 )
             )
         }
-        infotrygdTopic.produce(fnrInfotrygd) {
+        infotrygdTopic.produce(fnr) {
             InfotrygdKafkaDto(
                 after = InfotrygdKafkaDto.After(
-                    IS10_UTBET_TOM = "20220626",
-                    IS10_MAX = "20220626",
-                    F_NR = fnrInfotrygd,
+                    UTBET_TOM = "20220626",
+                    MAX_DATO = "20220626",
+                    F_NR = fnr,
                 )
             )
         }
 
-        val sykepengedagerKafkaDto = stateStore[fnrNormal]
+        val sykepengedagerKafkaDto = stateStore[fnr]
         assertNotNull(sykepengedagerKafkaDto)
 
         val expected = SykepengedagerKafkaDto(
@@ -246,26 +238,24 @@ internal class TopologyTest {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
-        //Infotrygdformat
-        val fnrInfotrygd = "82462930052"
-        val fnrNormal = "29468230052"
-        spleisTopic.produce(fnrNormal) {
+        val fnr = "29468230052"
+        spleisTopic.produce(fnr) {
             SpleisKafkaDto(
                 gjenståendeSykedager = 5,
                 foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 24),
             )
         }
-        infotrygdTopic.produce(fnrInfotrygd) {
+        infotrygdTopic.produce(fnr) {
             InfotrygdKafkaDto(
                 after = InfotrygdKafkaDto.After(
-                    IS10_UTBET_TOM = "20220626",
-                    IS10_MAX = "20220626",
-                    F_NR = fnrInfotrygd,
+                    UTBET_TOM = "20220626",
+                    MAX_DATO = "20220626",
+                    F_NR = fnr,
                 )
             )
         }
 
-        val sykepengedagerKafkaDto = stateStore[fnrNormal]
+        val sykepengedagerKafkaDto = stateStore[fnr]
         assertNotNull(sykepengedagerKafkaDto)
 
         val expected = SykepengedagerKafkaDto(

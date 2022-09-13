@@ -8,10 +8,9 @@ graph LR
 subgraph Sykepengedager
     %% TOPICS
     aap.sykepengedager.v1([aap.sykepengedager.v1])
-	spleis-sykepengedager-repartition([spleis-sykepengedager-repartition])
-	aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition([aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition])
-	tbd.utbetaling([tbd.utbetaling])
 	aap.sykepengedager.infotrygd.v1([aap.sykepengedager.infotrygd.v1])
+	spleis-sykepengedager-repartition([spleis-sykepengedager-repartition])
+	tbd.utbetaling([tbd.utbetaling])
     
     %% JOINS
     join-0{join}
@@ -26,7 +25,7 @@ subgraph Sykepengedager
 	migrate-sykepengedager-state-store-v1((migrate-sykepengedager-state-store-v1))
     
     %% JOIN STREAMS
-    aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition --> join-0
+    aap.sykepengedager.infotrygd.v1 --> join-0
 	sykepengedager-state-store-v1 --> join-0
 	join-0 --> |infotrygd-sykepengedager-produced| aap.sykepengedager.v1
 	spleis-sykepengedager-repartition --> join-1
@@ -42,7 +41,6 @@ subgraph Sykepengedager
     
     %% REPARTITION STREAMS
     tbd.utbetaling --> |re-key| spleis-sykepengedager-repartition
-	aap.sykepengedager.infotrygd.v1 --> |re-key| aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition
 end
 
 %% COLORS
@@ -54,10 +52,9 @@ end
 
 %% STYLES
 style aap.sykepengedager.v1 fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
-style spleis-sykepengedager-repartition fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
-style aap.sykepengedager.infotrygd.v1-joined-aap.sykepengedager.v1-repartition fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
-style tbd.utbetaling fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style aap.sykepengedager.infotrygd.v1 fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
+style spleis-sykepengedager-repartition fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
+style tbd.utbetaling fill:#c233b4, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style sykepengedager-state-store-v1 fill:#78369f, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style metrics-sykepengedager-state-store-v1 fill:#78369f, stroke:#2a204a, stroke-width:2px, color:#2a204a
 style migrate-sykepengedager-state-store-v1 fill:#78369f, stroke:#2a204a, stroke-width:2px, color:#2a204a
