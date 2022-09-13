@@ -15,11 +15,13 @@ private val secureLog = LoggerFactory.getLogger("secureLog")
 internal fun StreamsBuilder.infotrygdStream(sykepengedager: KTable<String, SykepengedagerKafkaDto>) {
     consume(Topics.infotrygd)
         .filterNotNull("infotrygd-sykepengedager-filter-tombstone")
+        .filterNotNullBy("infotrygd-sykepengedager-filter-utbet-tom") { infotrygdKafkaDto -> infotrygdKafkaDto.after.UTBET_TOM }
+        .filterNotNullBy("infotrygd-sykepengedager-filter-max-dato") { infotrygdKafkaDto -> infotrygdKafkaDto.after.MAX_DATO }
         .leftJoin(Topics.infotrygd with Topics.sykepengedager, sykepengedager)
         .mapValues("infotrygd-sykepengedager-map") { (infotrygdKafkaDto, gammelSykepengedagerKafkaDto) ->
             val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
-            val utbetTom = LocalDate.parse(infotrygdKafkaDto.after.UTBET_TOM, formatter)
-            val maksdato = LocalDate.parse(infotrygdKafkaDto.after.MAX_DATO, formatter)
+            val utbetTom = requireNotNull(infotrygdKafkaDto.after.UTBET_TOM).let { LocalDate.parse(it, formatter) }
+            val maksdato = requireNotNull(infotrygdKafkaDto.after.MAX_DATO).let { LocalDate.parse(it, formatter) }
             SykepengedagerKafkaDto(
                 response = SykepengedagerKafkaDto.Response(
                     gjenståendeSykedager = utbetTom.gjenståendeSykedager(maksdato),
