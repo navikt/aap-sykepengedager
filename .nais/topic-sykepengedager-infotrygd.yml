@@ -17,11 +17,14 @@ spec:
     partitions: 12
   acl:
     - team: aap
-      application: sykepengedager
-      access: read
-    - team: aap
       application: sykepengedager-infotrygd
       access: write
+    - team: aap
+      application: sykepengedager
+      access: read
+    - team: team-esyfo
+      application: esyfovarsel
+      access: read
   {{#each kafka.acl.dev as |dev|}}
     - team: "{{dev.team}}"
       application: "{{dev.application}}"
