@@ -8,10 +8,14 @@ data class SykepengedagerKafkaDto(
     val version: Int = VERSION,
 ) : Migratable {
     data class Response(
-        val gjenståendeSykedager: Int,
-        val foreløpigBeregnetSluttPåSykepenger: LocalDate,
-        val kilde: Kilde,
-    )
+        val sykepengedager: Sykepengedager?,
+    ) {
+        data class Sykepengedager(
+            val gjenståendeSykedager: Int,
+            val foreløpigBeregnetSluttPåSykepenger: LocalDate,
+            val kilde: Kilde,
+        )
+    }
 
     private var erMigrertAkkuratNå: Boolean = false
 

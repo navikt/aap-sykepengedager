@@ -31,9 +31,11 @@ internal fun StreamsBuilder.spleisStream(sykepengedager: KTable<String, Sykepeng
             val foreløpigBeregnetSluttPåSykepenger = requireNotNull(spleisKafkaDto.foreløpigBeregnetSluttPåSykepenger)
             SykepengedagerKafkaDto(
                 response = SykepengedagerKafkaDto.Response(
-                    gjenståendeSykedager = gjenståendeSykedager,
-                    foreløpigBeregnetSluttPåSykepenger = foreløpigBeregnetSluttPåSykepenger,
-                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                        gjenståendeSykedager = gjenståendeSykedager,
+                        foreløpigBeregnetSluttPåSykepenger = foreløpigBeregnetSluttPåSykepenger,
+                        kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                    )
                 )
             ) to gammelSykepengedagerKafkaDto
         }

@@ -24,9 +24,11 @@ internal fun StreamsBuilder.infotrygdStream(sykepengedager: KTable<String, Sykep
             val maksdato = requireNotNull(infotrygdKafkaDto.after.MAX_DATO).let { LocalDate.parse(it, formatter) }
             SykepengedagerKafkaDto(
                 response = SykepengedagerKafkaDto.Response(
-                    gjenståendeSykedager = utbetTom.gjenståendeSykedager(maksdato),
-                    foreløpigBeregnetSluttPåSykepenger = maksdato,
-                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                    sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                        gjenståendeSykedager = utbetTom.gjenståendeSykedager(maksdato),
+                        foreløpigBeregnetSluttPåSykepenger = maksdato,
+                        kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                    )
                 )
             ) to gammelSykepengedagerKafkaDto
         }

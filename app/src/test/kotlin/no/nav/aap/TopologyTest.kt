@@ -12,31 +12,28 @@ import no.nav.aap.kafka.streams.test.KafkaStreamsMock
 import no.nav.aap.kafka.streams.test.readAndAssert
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.streams.TestInputTopic
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class TopologyTest {
     private val kafka: KafkaStreamsMock = KafkaStreamsMock()
 
-    @BeforeAll
+    @BeforeEach
     fun initiate() = kafka.connect(
         config = KStreamsConfig("test", "mock://aiven"),
         registry = SimpleMeterRegistry(),
         topology = topology(SimpleMeterRegistry(), MockProducer())
     )
 
-    @AfterAll
+    @AfterEach
     fun teardown() = kafka.close()
 
     @Test
     fun `Publiserer sykepengedager fra Spleis`() {
         val spleisTopic = kafka.inputTopic(Topics.spleis)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "29468230052"
@@ -52,18 +49,22 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 0,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
-                kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 0,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
+                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 1)
     }
 
     @Test
     fun `Publiserer sykepengedager fra Infotrygd`() {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "29468230052"
@@ -82,18 +83,22 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 88,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 9, 7),
-                kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 88,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 9, 7),
+                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 1)
     }
 
     @Test
     fun `Ved beregning av gjenstående sykedager skal siste utbetalte dag ikke telles med og siste sykepengedag skal telles med`() {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "29468230052"
@@ -113,18 +118,22 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 1,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 8, 29),
-                kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 1,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 8, 29),
+                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 1)
     }
 
     @Test
     fun `Ny sykepengedager fra Spleis overskriver tidligere fra Spleis`() {
         val spleisTopic = kafka.inputTopic(Topics.spleis)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "123"
@@ -146,19 +155,23 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 0,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
-                kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 0,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
+                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 2)
     }
 
     @Test
     fun `Ny sykepengedager fra Spleis overskriver tidligere fra Infotrygd`() {
         val spleisTopic = kafka.inputTopic(Topics.spleis)
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "29468230052"
@@ -184,18 +197,22 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 0,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
-                kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 0,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
+                    kilde = SykepengedagerKafkaDto.Kilde.SPLEIS,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 2)
     }
 
     @Test
     fun `Ny sykepengedager fra Infotrygd overskriver tidligere fra Infotrygd`() {
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "29468230052"
@@ -223,19 +240,23 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 0,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
-                kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 0,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
+                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 2)
     }
 
     @Test
     fun `Ny sykepengedager fra Infotrygd overskriver tidligere fra Spleis`() {
         val spleisTopic = kafka.inputTopic(Topics.spleis)
         val infotrygdTopic = kafka.inputTopic(Topics.infotrygd)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
         val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
 
         val fnr = "29468230052"
@@ -260,13 +281,16 @@ internal class TopologyTest {
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
-                gjenståendeSykedager = 0,
-                foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
-                kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
+                    gjenståendeSykedager = 0,
+                    foreløpigBeregnetSluttPåSykepenger = LocalDate.of(2022, 6, 26),
+                    kilde = SykepengedagerKafkaDto.Kilde.INFOTRYGD,
+                )
             )
         )
 
         assertEquals(expected, sykepengedagerKafkaDto)
+        sykepengedagerOutputTopic.readAndAssert().hasNumberOfRecordsForKey(fnr, 2)
     }
 
     @Test
@@ -297,7 +321,22 @@ internal class TopologyTest {
         sykepengedagerOutputTopic.readAndAssert()
             .hasNumberOfRecordsForKey("123", 2)
             .hasValuesForPredicate("123", 2) { it.response != null }
-            .hasLastValueMatching { it === sykepengedagerFraSpleis }
+            .hasLastValueMatching { assertEquals(sykepengedagerFraSpleis, it) }
+    }
+
+    @Test
+    fun `Mottatt behov fører til response selv om bruker ikke har sykepengedager`() {
+        val sykepengedagerTopic = kafka.inputTopic(Topics.sykepengedager)
+        val sykepengedagerOutputTopic = kafka.outputTopic(Topics.sykepengedager)
+
+        sykepengedagerTopic.produce("123") {
+            SykepengedagerKafkaDto(response = null)
+        }
+
+        sykepengedagerOutputTopic.readAndAssert()
+            .hasNumberOfRecordsForKey("123", 1)
+            .hasValuesForPredicate("123", 1) { it.response != null }
+            .hasLastValueMatching { assertNull(requireNotNull(it?.response).sykepengedager) }
     }
 }
 
