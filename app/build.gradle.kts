@@ -1,4 +1,4 @@
-val aapLibVersion = "3.4.0"
+val aapLibVersion = "3.4.3"
 val ktorVersion = "2.1.2"
 
 plugins {
@@ -24,7 +24,7 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.9.4")
 
-    implementation("ch.qos.logback:logback-classic:1.4.1")
+    implementation("ch.qos.logback:logback-classic:1.4.3")
     implementation("net.logstash.logback:logstash-logback-encoder:7.2")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4")
