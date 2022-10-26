@@ -4,12 +4,11 @@ plugins {
 }
 
 dependencies {
-    implementation("com.github.navikt.aap-libs:kafka-interfaces:3.5.8")
+    implementation("com.github.navikt.aap-libs:kafka-interfaces:3.5.21")
     testImplementation(kotlin("test"))
 }
 
 group = "com.github.navikt"
-version = "1.0.0-SNAPSHOT"
 
 tasks {
     withType<Jar> {
@@ -25,8 +24,20 @@ java {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = project.name
+            artifactId = "aap-sykepengedager"
+            version = project.findProperty("dto-kafka.version").toString()
             from(components["java"])
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/navikt/aap-sykepengedager")
+                credentials {
+                    username = "x-access-token"
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
         }
     }
 }
