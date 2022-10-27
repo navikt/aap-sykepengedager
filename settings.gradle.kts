@@ -1,4 +1,4 @@
-rootProject.name = "sykepengedager"
+rootProject.name = "aap-sykepengedager"
 
 include(
     "app",
