@@ -18,10 +18,11 @@ internal fun StreamsBuilder.infotrygdStream(sykepengedager: KTable<String, Sykep
         .filterNotNullBy("infotrygd-sykepengedager-filter-utbet-tom") { infotrygdKafkaDto -> infotrygdKafkaDto.after.UTBET_TOM }
         .filterNotNullBy("infotrygd-sykepengedager-filter-max-dato") { infotrygdKafkaDto -> infotrygdKafkaDto.after.MAX_DATO }
         .leftJoin(Topics.infotrygd with Topics.sykepengedager, sykepengedager)
-        .mapValues("infotrygd-sykepengedager-map") { (infotrygdKafkaDto, gammelSykepengedagerKafkaDto) ->
+        .mapNotNull("infotrygd-sykepengedager-map") { (infotrygdKafkaDto, gammelSykepengedagerKafkaDto) ->
             val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
             val utbetTom = requireNotNull(infotrygdKafkaDto.after.UTBET_TOM).let { LocalDate.parse(it, formatter) }
             val maksdato = requireNotNull(infotrygdKafkaDto.after.MAX_DATO).let { LocalDate.parse(it, formatter) }
+            if (utbetTom > maksdato) return@mapNotNull null
             SykepengedagerKafkaDto(
                 response = SykepengedagerKafkaDto.Response(
                     sykepengedager = SykepengedagerKafkaDto.Response.Sykepengedager(
