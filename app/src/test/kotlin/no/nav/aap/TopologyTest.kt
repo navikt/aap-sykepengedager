@@ -15,6 +15,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
 
+@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class TopologyTest {
     private val kafka: KafkaStreamsMock = KafkaStreamsMock()

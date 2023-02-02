@@ -68,17 +68,17 @@ internal fun topology(
 ): Topology {
     val streams = StreamsBuilder()
 
-    val sykepengedagerStream = streams.consume(Topics.sykepengedager)
-    val sykepengedagerKTable = sykepengedagerStream
-        .filter { _, value -> value?.response != null }
-        .produce(Tables.sykepengedager)
-
-    sykepengedagerKTable.scheduleMetrics(Tables.sykepengedager, 2.minutes, registry)
-    sykepengedagerKTable.migrateStateStore(Tables.sykepengedager, sykepengedagerProducer)
-
-    streams.spleisStream(sykepengedagerKTable)
-    streams.infotrygdStream(sykepengedagerKTable)
-    sykepengedagerStream.reproduce(sykepengedagerKTable)
+//    val sykepengedagerStream = streams.consume(Topics.sykepengedager)
+//    val sykepengedagerKTable = sykepengedagerStream
+//        .filter { _, value -> value?.response != null }
+//        .produce(Tables.sykepengedager)
+//
+//    sykepengedagerKTable.scheduleMetrics(Tables.sykepengedager, 2.minutes, registry)
+//    sykepengedagerKTable.migrateStateStore(Tables.sykepengedager, sykepengedagerProducer)
+//
+//    streams.spleisStream(sykepengedagerKTable)
+//    streams.infotrygdStream(sykepengedagerKTable)
+//    sykepengedagerStream.reproduce(sykepengedagerKTable)
 
     return streams.build()
 }
