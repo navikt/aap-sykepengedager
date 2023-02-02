@@ -12,7 +12,7 @@ internal class CreateMermaidDiagram {
     @Test
     fun `generate mermaid diagram`() {
         val sykepengedagerProducer = MockProducer<String, SykepengedagerKafkaDto>()
-        val topology = topology(SimpleMeterRegistry(), sykepengedagerProducer)
+        val topology = topology(SimpleMeterRegistry(), sykepengedagerProducer, true)
         val flowchart = Mermaid.graph("Sykepengedager", topology)
         val mermaidFlowcharMarkdown = markdown(flowchart)
         File("../doc/topology.md").apply { writeText(mermaidFlowcharMarkdown) }

@@ -18,7 +18,6 @@ import no.nav.aap.app.stream.reproduce
 import no.nav.aap.app.stream.spleisStream
 import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
 import no.nav.aap.kafka.streams.KStreams
-import no.nav.aap.kafka.streams.KStreamsConfig
 import no.nav.aap.kafka.streams.KafkaStreams
 import no.nav.aap.kafka.streams.extension.consume
 import no.nav.aap.kafka.streams.extension.produce
@@ -34,8 +33,6 @@ import kotlin.time.Duration.Companion.minutes
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::server).start(wait = true)
 }
-
-data class Config(val kafka: KStreamsConfig)
 
 internal fun Application.server(kafka: KStreams = KafkaStreams) {
     val prometheus = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -54,7 +51,7 @@ internal fun Application.server(kafka: KStreams = KafkaStreams) {
     kafka.connect(
         config = config.kafka,
         registry = prometheus,
-        topology = topology(prometheus, sykepengedagerProducer),
+        topology = topology(prometheus, sykepengedagerProducer, config.toggle.settOppProdStream),
     )
 
     routing {
@@ -64,21 +61,25 @@ internal fun Application.server(kafka: KStreams = KafkaStreams) {
 
 internal fun topology(
     registry: MeterRegistry,
-    sykepengedagerProducer: Producer<String, SykepengedagerKafkaDto>
+    sykepengedagerProducer: Producer<String, SykepengedagerKafkaDto>,
+    settOppProdStream: Boolean
 ): Topology {
     val streams = StreamsBuilder()
 
-//    val sykepengedagerStream = streams.consume(Topics.sykepengedager)
-//    val sykepengedagerKTable = sykepengedagerStream
-//        .filter { _, value -> value?.response != null }
-//        .produce(Tables.sykepengedager)
-//
-//    sykepengedagerKTable.scheduleMetrics(Tables.sykepengedager, 2.minutes, registry)
-//    sykepengedagerKTable.migrateStateStore(Tables.sykepengedager, sykepengedagerProducer)
-//
-//    streams.spleisStream(sykepengedagerKTable)
-//    streams.infotrygdStream(sykepengedagerKTable)
-//    sykepengedagerStream.reproduce(sykepengedagerKTable)
+    val sykepengedagerStream = streams.consume(Topics.sykepengedager)
+    val sykepengedagerKTable = sykepengedagerStream
+        .filter { _, value -> value?.response != null }
+        .produce(Tables.sykepengedager)
+
+    sykepengedagerKTable.scheduleMetrics(Tables.sykepengedager, 2.minutes, registry)
+    sykepengedagerKTable.migrateStateStore(Tables.sykepengedager, sykepengedagerProducer)
+
+    if (settOppProdStream) {
+        streams.spleisStream(sykepengedagerKTable)
+        streams.infotrygdStream(sykepengedagerKTable)
+    }
+
+    sykepengedagerStream.reproduce(sykepengedagerKTable)
 
     return streams.build()
 }

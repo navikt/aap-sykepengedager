@@ -15,7 +15,6 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
 
-@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class TopologyTest {
     private val kafka: KafkaStreamsMock = KafkaStreamsMock()
@@ -24,7 +23,7 @@ internal class TopologyTest {
     fun initiate() = kafka.connect(
         config = KStreamsConfig("test", "mock://aiven"),
         registry = SimpleMeterRegistry(),
-        topology = topology(SimpleMeterRegistry(), MockProducer())
+        topology = topology(SimpleMeterRegistry(), MockProducer(), true)
     )
 
     @AfterEach

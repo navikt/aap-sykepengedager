@@ -1,3 +1,5 @@
+toggle:
+  settOppProdStream: "true"
 kafka:
   pool: nav-dev
   permanent-delete-topics: true

@@ -37,3 +37,6 @@ spec:
   prometheus:
     enabled: true
     path: /actuator/metrics
+  env:
+    - name: TOGGLE_SETT_OPP_PRODSTREAM
+      value: "{{toggle.settOppProdStream}}"
