@@ -3,6 +3,7 @@ val ktorVersion = "2.2.3"
 
 plugins {
     id("io.ktor.plugin")
+    application
 }
 
 application {
