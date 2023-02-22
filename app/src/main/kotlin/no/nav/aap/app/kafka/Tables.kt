@@ -1,9 +1,7 @@
 package no.nav.aap.app.kafka
 
-import no.nav.aap.kafka.streams.Table
-
-internal const val SYKEPENGEDAGER_STORE_NAME = "sykepengedager-state-store-v1"
+import no.nav.aap.kafka.streams.v2.Table
 
 object Tables {
-    val sykepengedager = Table("sykepengedager", Topics.sykepengedager, false, SYKEPENGEDAGER_STORE_NAME)
+    val sykepengedager = Table(Topics.sykepengedager, stateStoreName = "sykepengedager-state-store-v1")
 }

@@ -1,14 +1,14 @@
 package no.nav.aap
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import no.nav.aap.app.kafka.SYKEPENGEDAGER_STORE_NAME
+import no.nav.aap.app.kafka.Tables
 import no.nav.aap.app.kafka.Topics
 import no.nav.aap.app.modell.InfotrygdKafkaDto
 import no.nav.aap.app.modell.SpleisKafkaDto
 import no.nav.aap.app.topology
 import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
-import no.nav.aap.kafka.streams.KStreamsConfig
-import no.nav.aap.kafka.streams.test.KafkaStreamsMock
+import no.nav.aap.kafka.streams.v2.config.StreamsConfig
+import no.nav.aap.kafka.streams.v2.test.KStreamsMock
 import org.apache.kafka.clients.producer.MockProducer
 import org.apache.kafka.streams.TestInputTopic
 import org.junit.jupiter.api.*
@@ -17,11 +17,11 @@ import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class TopologyTest {
-    private val kafka: KafkaStreamsMock = KafkaStreamsMock()
+    private val kafka: KStreamsMock = KStreamsMock()
 
     @BeforeEach
     fun initiate() = kafka.connect(
-        config = KStreamsConfig("test", "mock://aiven"),
+        config = StreamsConfig("test", "mock://aiven"),
         registry = SimpleMeterRegistry(),
         topology = topology(SimpleMeterRegistry(), MockProducer(), true)
     )
@@ -33,7 +33,7 @@ internal class TopologyTest {
     fun `Publiserer sykepengedager fra Spleis`() {
         val spleisTopic = kafka.testTopic(Topics.spleis)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "29468230052"
         spleisTopic.produce(fnr) {
@@ -64,7 +64,7 @@ internal class TopologyTest {
     fun `Publiserer sykepengedager fra Infotrygd`() {
         val infotrygdTopic = kafka.testTopic(Topics.infotrygd)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "29468230052"
         infotrygdTopic.produce(fnr) {
@@ -98,7 +98,7 @@ internal class TopologyTest {
     fun `Ved beregning av gjenstående sykedager skal siste utbetalte dag ikke telles med og siste sykepengedag skal telles med`() {
         val infotrygdTopic = kafka.testTopic(Topics.infotrygd)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "29468230052"
         infotrygdTopic.produce(fnr) {
@@ -133,7 +133,7 @@ internal class TopologyTest {
     fun `Ny sykepengedager fra Spleis overskriver tidligere fra Spleis`() {
         val spleisTopic = kafka.testTopic(Topics.spleis)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "123"
         spleisTopic.produce(fnr) {
@@ -171,7 +171,7 @@ internal class TopologyTest {
         val spleisTopic = kafka.testTopic(Topics.spleis)
         val infotrygdTopic = kafka.testTopic(Topics.infotrygd)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "29468230052"
         infotrygdTopic.produce(fnr) {
@@ -191,8 +191,7 @@ internal class TopologyTest {
         }
 
         val sykepengedagerKafkaDto = stateStore[fnr]
-        assertNotNull(sykepengedagerKafkaDto)
-        assertNotNull(sykepengedagerKafkaDto.response)
+        assertNotNull(sykepengedagerKafkaDto?.response)
 
         val expected = SykepengedagerKafkaDto(
             response = SykepengedagerKafkaDto.Response(
@@ -212,7 +211,7 @@ internal class TopologyTest {
     fun `Ny sykepengedager fra Infotrygd overskriver tidligere fra Infotrygd`() {
         val infotrygdTopic = kafka.testTopic(Topics.infotrygd)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "29468230052"
         infotrygdTopic.produce(fnr) {
@@ -256,7 +255,7 @@ internal class TopologyTest {
         val spleisTopic = kafka.testTopic(Topics.spleis)
         val infotrygdTopic = kafka.testTopic(Topics.infotrygd)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         val fnr = "29468230052"
         spleisTopic.produce(fnr) {
@@ -296,7 +295,7 @@ internal class TopologyTest {
     fun `en tidligere sykepengedager blir reprodusert ved tom response`() {
         val spleisTopic = kafka.testTopic(Topics.spleis)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
-        val stateStore = kafka.getStore<SykepengedagerKafkaDto>(SYKEPENGEDAGER_STORE_NAME)
+        val stateStore = kafka.getStore(Tables.sykepengedager)
 
         spleisTopic.produce("123") {
             SpleisKafkaDto(
@@ -306,8 +305,7 @@ internal class TopologyTest {
         }
 
         val sykepengedagerFraSpleis = stateStore["123"]
-        assertNotNull(sykepengedagerFraSpleis)
-        assertNotNull(sykepengedagerFraSpleis.response)
+        assertNotNull(sykepengedagerFraSpleis?.response)
 
         sykepengedagerTopic.produce("123") {
             SykepengedagerKafkaDto(response = null)

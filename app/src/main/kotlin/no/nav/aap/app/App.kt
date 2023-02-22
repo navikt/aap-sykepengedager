@@ -17,35 +17,34 @@ import no.nav.aap.app.stream.infotrygdStream
 import no.nav.aap.app.stream.reproduce
 import no.nav.aap.app.stream.spleisStream
 import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
-import no.nav.aap.kafka.streams.KStreams
-import no.nav.aap.kafka.streams.KafkaStreams
-import no.nav.aap.kafka.streams.extension.consume
-import no.nav.aap.kafka.streams.extension.produce
-import no.nav.aap.kafka.streams.store.migrateStateStore
-import no.nav.aap.kafka.streams.store.scheduleMetrics
-import no.nav.aap.kafka.vanilla.KafkaConfig
+import no.nav.aap.kafka.streams.v2.KStreams
+import no.nav.aap.kafka.streams.v2.KafkaStreams
+import no.nav.aap.kafka.streams.v2.Topology
+import no.nav.aap.kafka.streams.v2.processor.state.GaugeStoreEntriesStateScheduleProcessor
+import no.nav.aap.kafka.streams.v2.processor.state.MigrateStateInitProcessor
+import no.nav.aap.kafka.streams.v2.topology
 import no.nav.aap.ktor.config.loadConfig
 import org.apache.kafka.clients.producer.Producer
-import org.apache.kafka.streams.StreamsBuilder
-import org.apache.kafka.streams.Topology
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::server).start(wait = true)
 }
 
-internal fun Application.server(kafka: KStreams = KafkaStreams) {
+internal fun Application.server(kafka: KStreams = KafkaStreams()) {
     val prometheus = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val config = loadConfig<Config>()
 
     install(MicrometerMetrics) { registry = prometheus }
     install(ContentNegotiation) { jackson { registerModule(JavaTimeModule()) } }
 
-    val sykepengedagerProducer = kafka.createProducer(KafkaConfig.copyFrom(config.kafka), Topics.sykepengedager)
+    val sykepengedagerProducer = kafka.createProducer(config.kafka, Topics.sykepengedager)
 
     Thread.currentThread().setUncaughtExceptionHandler { _, e -> log.error("Uhåndtert feil", e) }
     environment.monitor.subscribe(ApplicationStopping) {
         kafka.close()
+        sykepengedagerProducer.close()
     }
 
     kafka.connect(
@@ -60,26 +59,35 @@ internal fun Application.server(kafka: KStreams = KafkaStreams) {
 }
 
 internal fun topology(
-    registry: MeterRegistry,
+    prometheus: MeterRegistry,
     sykepengedagerProducer: Producer<String, SykepengedagerKafkaDto>,
     settOppProdStream: Boolean
-): Topology {
-    val streams = StreamsBuilder()
-
-    val sykepengedagerStream = streams.consume(Topics.sykepengedager)
+): Topology = topology {
+    val sykepengedagerStream = consume(Topics.sykepengedager)
     val sykepengedagerKTable = sykepengedagerStream
-        .filter { _, value -> value?.response != null }
+        .filter { value -> value.response != null }
         .produce(Tables.sykepengedager)
 
-    sykepengedagerKTable.scheduleMetrics(Tables.sykepengedager, 2.minutes, registry)
-    sykepengedagerKTable.migrateStateStore(Tables.sykepengedager, sykepengedagerProducer)
+    sykepengedagerKTable.schedule(
+        GaugeStoreEntriesStateScheduleProcessor(
+            ktable = sykepengedagerKTable,
+            interval = 2.toDuration(DurationUnit.MINUTES),
+            registry = prometheus,
+        )
+    )
+
+    sykepengedagerKTable.init(
+        MigrateStateInitProcessor(
+            ktable = sykepengedagerKTable,
+            producer = sykepengedagerProducer,
+            logValue = true,
+        )
+    )
 
     if (settOppProdStream) {
-        streams.spleisStream(sykepengedagerKTable)
-        streams.infotrygdStream(sykepengedagerKTable)
+        spleisStream(sykepengedagerKTable)
+        infotrygdStream(sykepengedagerKTable)
     }
 
     sykepengedagerStream.reproduce(sykepengedagerKTable)
-
-    return streams.build()
 }
