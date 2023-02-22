@@ -1,5 +1,5 @@
 toggle:
-  settOppProdStream: ${TOGGLE_SETT_OPP_PRODSTREAM}
+  sett-opp-prod-stream: ${TOGGLE_SETT_OPP_PRODSTREAM}
 kafka:
   application-id: ${KAFKA_STREAMS_APPLICATION_ID}
   brokers: ${KAFKA_BROKERS}

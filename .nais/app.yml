@@ -21,23 +21,23 @@ spec:
   resources:
     limits:
       cpu: 500m
-      memory: 512Mi
+      memory: 1Gi
     requests:
       cpu: 250m
-      memory: 256Mi
+      memory: 512Mi
   liveness:
     path: /actuator/live
-    initialDelay: 3
-    periodSeconds: 3
-    failureThreshold: 21
+    initialDelay: 1
+    periodSeconds: 1
+    failureThreshold: 60
   readiness:
     path: /actuator/ready
-    initialDelay: 3
-    periodSeconds: 3
-    failureThreshold: 21
+    initialDelay: 1
+    periodSeconds: 1
+    failureThreshold: 60
   prometheus:
     enabled: true
     path: /actuator/metrics
   env:
     - name: TOGGLE_SETT_OPP_PRODSTREAM
-      value: "{{toggle.settOppProdStream}}"
+      value: "{{toggle.sett-opp-prod-stream}}"
