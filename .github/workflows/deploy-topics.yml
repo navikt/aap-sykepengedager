@@ -17,6 +17,7 @@ jobs:
         name:
           - topic-sykepengedager.yml
           - topic-sykepengedager-infotrygd.yml
+          - topic-subscribe-sykepengedager-infotrygd.yml
         cluster:
           - dev-gcp
           - prod-gcp
