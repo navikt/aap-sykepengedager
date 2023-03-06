@@ -7,8 +7,6 @@ metadata:
     team: aap
   annotations:
     kafka.nais.io/removeDataWhenResourceIsDeleted: "{{kafka.permanent-delete-topics}}"
-    kafka.format: json
-    kafka.state: "true"
     github.url: https://github.com/navikt/aap-sykepengedager
 spec:
   pool: {{kafka.pool}}
