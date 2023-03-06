@@ -14,7 +14,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import no.nav.aap.app.kafka.Tables
 import no.nav.aap.app.kafka.Topics
 import no.nav.aap.app.stream.infotrygdStream
-import no.nav.aap.app.stream.reproduce
 import no.nav.aap.app.stream.spleisStream
 import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
 import no.nav.aap.kafka.streams.v2.KStreams
@@ -63,10 +62,7 @@ internal fun topology(
     sykepengedagerProducer: Producer<String, SykepengedagerKafkaDto>,
     settOppProdStream: Boolean
 ): Topology = topology {
-    val sykepengedagerStream = consume(Topics.sykepengedager)
-    val sykepengedagerKTable = sykepengedagerStream
-        .filter { value -> value.response != null }
-        .produce(Tables.sykepengedager)
+    val sykepengedagerKTable = consume(Tables.sykepengedager)
 
     sykepengedagerKTable.schedule(
         GaugeStoreEntriesStateScheduleProcessor(
@@ -89,5 +85,8 @@ internal fun topology(
         infotrygdStream(sykepengedagerKTable)
     }
 
-    sykepengedagerStream.reproduce(sykepengedagerKTable)
+    consume(Topics.subscribe)
+        .leftJoinWith(sykepengedagerKTable)
+        .map { _, existing -> existing ?: SykepengedagerKafkaDto(SykepengedagerKafkaDto.Response(null)) }
+        .produce(Topics.sykepengedager)
 }

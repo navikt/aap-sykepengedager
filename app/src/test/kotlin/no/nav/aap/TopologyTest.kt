@@ -10,7 +10,6 @@ import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
 import no.nav.aap.kafka.streams.v2.config.StreamsConfig
 import no.nav.aap.kafka.streams.v2.test.KStreamsMock
 import org.apache.kafka.clients.producer.MockProducer
-import org.apache.kafka.streams.TestInputTopic
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.time.LocalDate
@@ -295,6 +294,7 @@ internal class TopologyTest {
     fun `en tidligere sykepengedager blir reprodusert ved tom response`() {
         val spleisTopic = kafka.testTopic(Topics.spleis)
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
+        val subscriberTopic = kafka.testTopic(Topics.subscribe)
         val stateStore = kafka.getStore(Tables.sykepengedager)
 
         spleisTopic.produce("123") {
@@ -307,8 +307,8 @@ internal class TopologyTest {
         val sykepengedagerFraSpleis = stateStore["123"]
         assertNotNull(sykepengedagerFraSpleis?.response)
 
-        sykepengedagerTopic.produce("123") {
-            SykepengedagerKafkaDto(response = null)
+        subscriberTopic.produce("123") {
+            "".toByteArray()
         }
 
         val sykepengedagerEtterRequest = stateStore["123"]
@@ -323,9 +323,10 @@ internal class TopologyTest {
     @Test
     fun `Mottatt behov fører til response selv om bruker ikke har sykepengedager`() {
         val sykepengedagerTopic = kafka.testTopic(Topics.sykepengedager)
+        val subscriberTopic = kafka.testTopic(Topics.subscribe)
 
-        sykepengedagerTopic.produce("123") {
-            SykepengedagerKafkaDto(response = null)
+        subscriberTopic.produce("123") {
+            "".toByteArray()
         }
 
         sykepengedagerTopic.assertThat()
@@ -334,6 +335,3 @@ internal class TopologyTest {
             .hasLastValueMatching { assertNull(requireNotNull(it?.response).sykepengedager) }
     }
 }
-
-private inline fun <reified V : Any> TestInputTopic<String, V>.produce(key: String, value: () -> V) =
-    pipeInput(key, value())
