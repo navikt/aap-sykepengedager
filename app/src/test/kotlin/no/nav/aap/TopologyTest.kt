@@ -8,7 +8,7 @@ import no.nav.aap.app.modell.SpleisKafkaDto
 import no.nav.aap.app.topology
 import no.nav.aap.dto.kafka.SykepengedagerKafkaDto
 import no.nav.aap.kafka.streams.v2.config.StreamsConfig
-import no.nav.aap.kafka.streams.v2.test.KStreamsMock
+import no.nav.aap.kafka.streams.v2.test.StreamsMock
 import org.apache.kafka.clients.producer.MockProducer
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
@@ -16,7 +16,7 @@ import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class TopologyTest {
-    private val kafka: KStreamsMock = KStreamsMock()
+    private val kafka: StreamsMock = StreamsMock()
 
     @BeforeEach
     fun initiate() = kafka.connect(
