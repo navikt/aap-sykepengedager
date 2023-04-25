@@ -27,7 +27,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("net.logstash.logback:logstash-logback-encoder:7.3")
 
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
 
     testImplementation(kotlin("test"))
