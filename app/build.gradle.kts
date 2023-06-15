@@ -24,7 +24,7 @@ dependencies {
 
     implementation("io.micrometer:micrometer-registry-prometheus:1.11.1")
 
-    implementation("ch.qos.logback:logback-classic:1.4.7")
+    implementation("ch.qos.logback:logback-classic:1.4.8")
     implementation("net.logstash.logback:logstash-logback-encoder:7.3")
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
