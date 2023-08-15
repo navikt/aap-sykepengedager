@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation("com.github.navikt.aap-libs:kafka-interfaces:3.7.54")
+    implementation("com.github.navikt.aap-libs:kafka-interfaces:3.7.56")
     testImplementation(kotlin("test"))
 }
 
