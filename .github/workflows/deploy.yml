@@ -58,7 +58,7 @@ jobs:
           team: aap
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         env:
           PRINT_PAYLOAD: true
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
