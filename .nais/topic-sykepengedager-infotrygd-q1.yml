@@ -22,6 +22,9 @@ spec:
     - team: team-esyfo
       application: esyfovarsel
       access: read
+    - team: team-esyfo
+      application: sykepengedager-informasjon
+      access: read
   {{#each kafka.acl.dev as |dev|}}
     - team: "{{dev.team}}"
       application: "{{dev.application}}"
