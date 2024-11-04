@@ -3,7 +3,7 @@ toggle:
 kafka:
   pool: nav-dev
   permanent-delete-topics: true
-  sykepengedagerInfotrygdSecretName: aiven-sykepengedager-infotrygd-dev-e45by45w
+  sykepengedagerInfotrygdSecretName: aiven-sykepengedager-infotrygd-dev-e4gy8ged
   acl:
     dev:
       - team: aap

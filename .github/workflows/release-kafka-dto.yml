@@ -1,62 +1,62 @@
-name: Release Kafka DTO
-
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'dto-kafka/**'
-      - '.github/workflows/release-kafka-dto.yml'
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
-      checks: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # include git tags
-      - uses: actions/setup-java@v4
-        with:
-          java-version: 19
-          distribution: 'temurin'
-
-      - uses: paulhatch/semantic-version@v5.4.0
-        id: tag
-        with:
-          bump_each_commit: true
-          tag_prefix: ""
-
-      - id: notes
-        run: |
-          randomDelimiter=${RANDOM}
-          text="$(git --no-pager log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h %s")"
-          echo 'CHANGELOG<<$randomDelimiter' >> $GITHUB_OUTPUT
-          echo $text >> $GITHUB_OUTPUT
-          echo '$randomDelimiter' >> $GITHUB_OUTPUT
-      - uses: actions/create-release@v1.1.4
-        id: create_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.version }}
-          release_name: dto-kafka:${{ steps.tag.outputs.version }}
-          body: |
-            Changes in this Release
-            ${{ steps.notes.outputs.CHANGELOG }}
-
-      - uses: gradle/gradle-build-action@v3.5.0
-        with:
-          arguments: -Pdto-kafka.version=${{ steps.tag.outputs.version }} dto-kafka:test dto-kafka:publish --no-configuration-cache
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: dorny/test-reporter@v1.9.1
-        if: success() || failure()
-        with:
-          name: test
-          path: "**/build/test-results/test/TEST-*.xml"
-          reporter: java-junit
-          token: ${{ secrets.GITHUB_TOKEN }}
+#name: Release Kafka DTO
+#
+#on:
+#  push:
+#    branches: [ main ]
+#    paths:
+#      - 'dto-kafka/**'
+#      - '.github/workflows/release-kafka-dto.yml'
+#
+#jobs:
+#  release:
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: write
+#      packages: write
+#      checks: write
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0 # include git tags
+#      - uses: actions/setup-java@v4
+#        with:
+#          java-version: 19
+#          distribution: 'temurin'
+#
+#      - uses: paulhatch/semantic-version@v5.4.0
+#        id: tag
+#        with:
+#          bump_each_commit: true
+#          tag_prefix: ""
+#
+#      - id: notes
+#        run: |
+#          randomDelimiter=${RANDOM}
+#          text="$(git --no-pager log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%h %s")"
+#          echo 'CHANGELOG<<$randomDelimiter' >> $GITHUB_OUTPUT
+#          echo $text >> $GITHUB_OUTPUT
+#          echo '$randomDelimiter' >> $GITHUB_OUTPUT
+#      - uses: actions/create-release@v1.1.4
+#        id: create_release
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ steps.tag.outputs.version }}
+#          release_name: dto-kafka:${{ steps.tag.outputs.version }}
+#          body: |
+#            Changes in this Release
+#            ${{ steps.notes.outputs.CHANGELOG }}
+#
+#      - uses: gradle/gradle-build-action@v3.5.0
+#        with:
+#          arguments: -Pdto-kafka.version=${{ steps.tag.outputs.version }} dto-kafka:test dto-kafka:publish --no-configuration-cache
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - uses: dorny/test-reporter@v1.9.1
+#        if: success() || failure()
+#        with:
+#          name: test
+#          path: "**/build/test-results/test/TEST-*.xml"
+#          reporter: java-junit
+#          token: ${{ secrets.GITHUB_TOKEN }}

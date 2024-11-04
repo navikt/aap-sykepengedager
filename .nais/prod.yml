@@ -3,6 +3,6 @@ toggle:
 kafka:
   pool: nav-prod
   permanent-delete-topics: false
-  sykepengedagerInfotrygdSecretName: aiven-sykepengedager-infotrygd-prod-frh9ytt9
+  sykepengedagerInfotrygdSecretName: aiven-sykepengedager-infotrygd-prod-3f4ph89w
   acl:
     dev: []

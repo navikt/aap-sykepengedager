@@ -1,43 +1,43 @@
-name: Deploy Topics
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.nais/topic-*.yml'
-      - '.github/workflows/deploy-topics.yml'
-      - '.nais/dev.yml'
-      - '.nais/prod.yml'
-
-jobs:
-  deploy:
-    strategy:
-      matrix:
-        name:
-          - topic-sykepengedager.yml
-          - topic-sykepengedager-infotrygd.yml
-          - topic-subscribe-sykepengedager.yml
-        cluster:
-          - dev-gcp
-          - prod-gcp
-        include:
-          - cluster: dev-gcp
-            vars: dev.yml
-          - cluster: prod-gcp
-            vars: prod.yml
-          - cluster: dev-gcp
-            name: topic-sykepengedager-infotrygd-q1.yml
-            vars: dev.yml
-    name: Deploy ${{ matrix.name }} to ${{ matrix.cluster }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy ${{ matrix.name }} to ${{ matrix.cluster }}
-        uses: nais/deploy/actions/deploy@v2
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: ${{ matrix.cluster }}
-          RESOURCE: .nais/${{ matrix.name }}
-          VARS: .nais/${{ matrix.vars }}
-          PRINT_PAYLOAD: true
+#name: Deploy Topics
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#    paths:
+#      - '.nais/topic-*.yml'
+#      - '.github/workflows/deploy-topics.yml'
+#      - '.nais/dev.yml'
+#      - '.nais/prod.yml'
+#
+#jobs:
+#  deploy:
+#    strategy:
+#      matrix:
+#        name:
+#          - topic-sykepengedager.yml
+#          - topic-sykepengedager-infotrygd.yml
+#          - topic-subscribe-sykepengedager.yml
+#        cluster:
+#          - dev-gcp
+#          - prod-gcp
+#        include:
+#          - cluster: dev-gcp
+#            vars: dev.yml
+#          - cluster: prod-gcp
+#            vars: prod.yml
+#          - cluster: dev-gcp
+#            name: topic-sykepengedager-infotrygd-q1.yml
+#            vars: dev.yml
+#    name: Deploy ${{ matrix.name }} to ${{ matrix.cluster }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#      - name: Deploy ${{ matrix.name }} to ${{ matrix.cluster }}
+#        uses: nais/deploy/actions/deploy@v2
+#        env:
+#          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+#          CLUSTER: ${{ matrix.cluster }}
+#          RESOURCE: .nais/${{ matrix.name }}
+#          VARS: .nais/${{ matrix.vars }}
+#          PRINT_PAYLOAD: true
